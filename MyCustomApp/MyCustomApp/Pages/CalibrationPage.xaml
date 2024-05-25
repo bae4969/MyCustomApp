@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyCustomApp.Pages.CalibrationPage"
+             Title="Calibration"
+             BackgroundColor="#252525">
+
+	<Grid VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+
+		<!-- 상단 수평 레벨 -->
+		<Grid Grid.Row="0" Grid.Column="0" HorizontalOptions="Center">
+			<BoxView WidthRequest="200" HeightRequest="40" Color="LightGreen" />
+			<BoxView WidthRequest="2" HeightRequest="40" Color="Black" HorizontalOptions="Start" VerticalOptions="Center" TranslationX="75" />
+			<BoxView WidthRequest="2" HeightRequest="40" Color="Black" HorizontalOptions="End" VerticalOptions="Center" TranslationX="-75" />
+			<BoxView x:Name="HorizontalBubble" WidthRequest="30" HeightRequest="30" Color="Red" CornerRadius="15" HorizontalOptions="Center" VerticalOptions="Center" />
+		</Grid>
+
+		<!-- 중앙 원형 레벨 -->
+		<Grid Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center">
+			<AbsoluteLayout WidthRequest="200" HeightRequest="200">
+				<BoxView Color="LightBlue" CornerRadius="100" WidthRequest="200" HeightRequest="200" />
+				<AbsoluteLayout AbsoluteLayout.LayoutBounds="0.5, 0.5, AutoSize, AutoSize" AbsoluteLayout.LayoutFlags="PositionProportional">
+					<BoxView Color="#0288D1" CornerRadius="25" WidthRequest="50" HeightRequest="50" />
+				</AbsoluteLayout>
+				<BoxView x:Name="CentralBubble" Color="Red" CornerRadius="15" WidthRequest="30" HeightRequest="30" AbsoluteLayout.LayoutBounds="0.5, 0.5, AutoSize, AutoSize" AbsoluteLayout.LayoutFlags="PositionProportional" />
+			</AbsoluteLayout>
+		</Grid>
+
+		<!-- 오른쪽 수직 레벨 -->
+		<Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Center">
+			<BoxView WidthRequest="40" HeightRequest="200" Color="LightGreen" />
+			<BoxView WidthRequest="40" HeightRequest="2" Color="Black" HorizontalOptions="Center" VerticalOptions="Start" TranslationY="75" />
+			<BoxView WidthRequest="40" HeightRequest="2" Color="Black" HorizontalOptions="Center" VerticalOptions="End" TranslationY="-75" />
+			<BoxView x:Name="VerticalBubble" WidthRequest="30" HeightRequest="30" Color="Red" CornerRadius="15" HorizontalOptions="Center" VerticalOptions="Center" />
+		</Grid>
+
+		<!-- X, Y 축 값 및 동작 상태 -->
+		<StackLayout Grid.Row="2" Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center">
+			<Label x:Name="TiltLabelX" Text="X: 0" TextColor="White" FontSize="Large" HorizontalOptions="Center" />
+			<Label x:Name="TiltLabelY" Text="Y: 0" TextColor="White" FontSize="Large" HorizontalOptions="Center" />
+		</StackLayout>
+	</Grid>
+
+</ContentPage>
