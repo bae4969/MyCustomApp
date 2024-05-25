@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyCustomApp.Services;
+using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -8,6 +9,7 @@ namespace MyCustomApp.Pages
 	public partial class SpeedmeterPage : ContentPage
 	{
 		private bool isListening;
+		private bool isFullScreen = false;
 
 		public SpeedmeterPage()
 		{
@@ -19,12 +21,14 @@ namespace MyCustomApp.Pages
 		{
 			base.OnAppearing();
 			StartListening();
+			DeviceDisplay.KeepScreenOn = true;
 		}
 
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();
 			StopListening();
+			DeviceDisplay.KeepScreenOn = false;
 		}
 
 		private async void RequestLocationPermission()
@@ -68,7 +72,7 @@ namespace MyCustomApp.Pages
 					int speed = location.Speed.HasValue ? (int)(location.Speed.Value * 3.6) : 0; // 속도를 km/h로 변환
 					Device.BeginInvokeOnMainThread(() =>
 					{
-						SpeedLabel.Text = $"{speed:F1} km/h";
+						SpeedLabel.Text = $"{speed} km/h";
 					});
 				}
 			}
