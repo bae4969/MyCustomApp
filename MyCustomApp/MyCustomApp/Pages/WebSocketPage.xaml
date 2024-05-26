@@ -3,16 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MyCustomApp.Pages.WebSocketPage"
              Title="WebSocket"
-             BackgroundColor="#252525">
+             BackgroundColor="Black">
 
     <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
         <Label Text="Welcome to WebSocket Client"
                HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
 
         <Button Text="Connect to WebSocket Server" Clicked="OnConnectButtonClicked" />
-        <Entry x:Name="MessageEntry" Placeholder="Enter message" />
+        <Entry x:Name="MessageEntry" TextColor="#D0D0D0" Placeholder="Enter message" />
         <Button Text="Send Message" Clicked="OnSendMessageButtonClicked" />
-        <Label x:Name="ResponseLabel" Text="Response will be shown here" />
+        <Label x:Name="ResponseLabel" TextColor="#D0D0D0" Text="Response will be shown here" />
     </StackLayout>
 
 </ContentPage>

@@ -8,9 +8,8 @@ namespace MyCustomApp.Pages
 {
 	public partial class CalibrationPage : ContentPage
 	{
-		const double MaxBubbleOffset = 80; // 외부 원의 반지름 - 중앙 버블의 반지름
-		const double MaxHorizontalOffset = 80; // 상단 버블의 최대 이동 거리
-		const double MaxVerticalOffset = 80; // 오른쪽 버블의 최대 이동 거리
+		const double MaxAngle = 45.0;
+		const double MaxOffset = 130; // 상단 버블의 최대 이동 거리
 
 		List<double> AngleXQueue = new List<double>();
 		List<double> AngleYQueue = new List<double>();
@@ -59,55 +58,38 @@ namespace MyCustomApp.Pages
 			angleX_avg /= AngleXQueue.Count;
 			angleY_avg /= AngleYQueue.Count;
 
-			// 중앙 버블의 이동 거리를 계산
-			double bubbleX = angleX;
-			double bubbleY = angleY;
-
-			bubbleX = AdjustAngle(bubbleX);
-			bubbleY = AdjustAngle(bubbleY);
+			double limited_angle_x = angleX_avg;
+			double limited_angle_y = angleY_avg;
+			if (limited_angle_x > 0 && limited_angle_x > MaxAngle) limited_angle_x = MaxAngle;
+			if (limited_angle_y > 0 && limited_angle_y > MaxAngle) limited_angle_y = MaxAngle;
+			else if(limited_angle_x < 0 && limited_angle_x < -MaxAngle) limited_angle_x = -MaxAngle;
+			else if (limited_angle_y < 0 && limited_angle_y < -MaxAngle) limited_angle_y = -MaxAngle;
 
 			// 상단 버블과 오른쪽 버블의 위치 제한
-			double limitedHorizontalX = MathExtensions.Clamp(angleX, -MaxHorizontalOffset, MaxHorizontalOffset);
-			double limitedVerticalY = MathExtensions.Clamp(angleY, -MaxVerticalOffset, MaxVerticalOffset);
+			double multiX = limited_angle_x / MaxAngle;
+			double multiY = limited_angle_y / MaxAngle;
 
-			// 중앙 버블이 외부 원 밖으로 나가지 않도록 제한
-			double distance = Math.Sqrt(bubbleX * bubbleX + bubbleY * bubbleY);
-			if (distance > MaxBubbleOffset)
-			{
-				double scale = MaxBubbleOffset / distance;
-				bubbleX *= scale;
-				bubbleY *= scale;
-			}
+			double angleTot = Math.Sqrt(multiX * multiX + multiY * multiY);
+			double multiC = angleTot > 1.0 ? 1.0 / angleTot : 1.0;
+			//double multiC = angleTot > MaxAngle ? 1.0 : angleTot / MaxAngle;
 
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				// 상단 버블의 위치 업데이트 (좌우 각도)
-				HorizontalBubble.TranslationX = limitedHorizontalX;
-
-				// 오른쪽 버블의 위치 업데이트 (상하 각도)
-				VerticalBubble.TranslationY = -limitedVerticalY;
+				HorizontalBubble.TranslationX = MaxOffset * multiX;
+				VerticalBubble.TranslationY = -MaxOffset * multiY;
 
 				// 중앙 버블의 위치 업데이트 (좌우 및 상하 각도)
-				CentralBubble.TranslationX = bubbleX;
-				CentralBubble.TranslationY = -bubbleY;
+				CentralBubble.TranslationX = MaxOffset * multiX * multiC;
+				CentralBubble.TranslationY = -MaxOffset * multiY * multiC;
 
 				// 각도 값 업데이트
-				TiltLabelX.Text = $"X: {angleX:F1}";
-				TiltLabelY.Text = $"Y: {angleY:F1}";
+				TiltLabelX.Text = $"X: {angleX_avg:F1}";
+				TiltLabelY.Text = $"Y: {angleY_avg:F1}";
 
 				// 색상 변경 로직
-				HorizontalBubble.Color = Math.Abs(angleX) <= 2 ? Color.Red : Color.Blue;
-				VerticalBubble.Color = Math.Abs(angleY) <= 2 ? Color.Red : Color.Blue;
-
-				// 중앙 버블 색상 변경 (상단과 오른쪽이 동시에 -2~2도 사이일 때)
-				if (Math.Abs(angleX) <= 2 && Math.Abs(angleY) <= 2)
-				{
-					CentralBubble.Color = Color.Red;
-				}
-				else
-				{
-					CentralBubble.Color = Color.Blue;
-				}
+				HorizontalBubble.Color = Math.Abs(angleX_avg) <= 2 ? Color.FromRgb(200, 50, 50) : Color.FromRgb(50, 50, 200);
+				VerticalBubble.Color = Math.Abs(angleY_avg) <= 2 ? Color.FromRgb(200, 50, 50) : Color.FromRgb(50, 50, 200);
+				CentralBubble.Color = Math.Abs(angleX_avg) <= 2 && Math.Abs(angleY_avg) <= 2 ? Color.FromRgb(200, 50, 50) : Color.FromRgb(50, 50, 200);
 			});
 		}
 
@@ -117,17 +99,8 @@ namespace MyCustomApp.Pages
 				angle = 180 - angle;
 			if (angle < -90)
 				angle = -180 - angle;
-			return MathExtensions.Clamp(angle, -90, 90);
-		}
-	}
 
-	public static class MathExtensions
-	{
-		public static double Clamp(double value, double min, double max)
-		{
-			if (value < min) return min;
-			if (value > max) return max;
-			return value;
+			return angle;
 		}
 	}
 }

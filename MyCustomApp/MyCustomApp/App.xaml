@@ -7,9 +7,8 @@
     -->
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="Primary">#2196F3</Color>
-            <Color x:Key="FlyoutBackgroundColor">#252525</Color>
-            <Color x:Key="FlyoutForegroundColor">#FFFFFF</Color>
+            <Color x:Key="Primary">#202020</Color>
+            <Color x:Key="TextPrimary">#B0B0B0</Color>
             <Color x:Key="FlyoutItemSelectedColor">#FF4081</Color>
             <Color x:Key="FlyoutItemUnselectedColor">#B0B0B0</Color>
             <Style TargetType="Button">
