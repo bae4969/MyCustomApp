@@ -19,6 +19,12 @@ namespace MyCustomApp.Droid
 			Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 			Xamarin.Forms.Forms.Init(this, savedInstanceState);
 			LoadApplication(new App());
+
+			// 상태표시줄 색상 변경
+			if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+			{
+				Window.SetStatusBarColor(Android.Graphics.Color.ParseColor("#202020"));
+			}
 		}
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
 		{

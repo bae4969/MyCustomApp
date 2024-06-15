@@ -1,6 +1,7 @@
 ﻿using MyCustomApp.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -10,18 +11,23 @@ namespace MyCustomApp.Pages
 {
 	public partial class SpeedmeterPage : ContentPage
 	{
-		const double MaxAcc = 0.5;
-		const double MaxOffset = 130; // 상단 버블의 최대 이동 거리
-
 		private bool isListening = false;
-		private bool isNeedUpdateBase = false;
-		private Vector3 baseAccVal = new Vector3(0.0f, 9.81f, 0.0f);
+		private readonly int SAMPLING_INTERVAL = 500;
+		private readonly int SPEED_SAMPLE_RANGE = 1000;
+		private readonly int INCLINE_SAMPLE_RANGE = 30000;
+		private readonly int SPEED_SMAPLE_CNT;
+		private readonly int INCLINE_SMAPLE_CNT;
+		private readonly int MAX_SMAPLE_CNT;
+		private readonly Queue<Location> lastLocations = new Queue<Location>();
 
-		readonly List<double> AccXQueue = new List<double>();
-		readonly List<double> AccYQueue = new List<double>();
+		private int outputSpeed = 0;
+		private double outputIncline = 0.0;
 
 		public SpeedmeterPage()
 		{
+			SPEED_SMAPLE_CNT = SPEED_SAMPLE_RANGE / SAMPLING_INTERVAL;
+			INCLINE_SMAPLE_CNT = INCLINE_SAMPLE_RANGE / SAMPLING_INTERVAL;
+			MAX_SMAPLE_CNT = Math.Max(SPEED_SMAPLE_CNT, INCLINE_SMAPLE_CNT);
 			InitializeComponent();
 			RequestLocationPermission();
 		}
@@ -30,15 +36,12 @@ namespace MyCustomApp.Pages
 		{
 			base.OnAppearing();
 			isListening = true;
-			isNeedUpdateBase = true;
-			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+			Device.StartTimer(TimeSpan.FromMilliseconds(SAMPLING_INTERVAL), () =>
 			{
 				UpdateLocation();
 				return isListening; // true를 반환하면 타이머가 계속 작동합니다.
 			});
 			DeviceDisplay.KeepScreenOn = true;
-			Accelerometer.ReadingChanged += OnAccelerometerReadingChanged;
-			Accelerometer.Start(SensorSpeed.UI);
 		}
 
 		protected override void OnDisappearing()
@@ -46,13 +49,7 @@ namespace MyCustomApp.Pages
 			base.OnDisappearing();
 			isListening = false;
 			DeviceDisplay.KeepScreenOn = false;
-			Accelerometer.ReadingChanged -= OnAccelerometerReadingChanged;
 			Accelerometer.Stop();
-		}
-
-		private void OnSetZeroAccClicked(object sender, EventArgs e)
-		{
-			isNeedUpdateBase = true;
 		}
 
 		private async void RequestLocationPermission()
@@ -73,68 +70,64 @@ namespace MyCustomApp.Pages
 		{
 			try
 			{
-				var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(1));
+				var request = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromMilliseconds(SAMPLING_INTERVAL));
 				var location = await Geolocation.GetLocationAsync(request);
+				if (location == null) return;
 
-				if (location != null)
+
+				lastLocations.Enqueue(location);
+				while (lastLocations.Count > MAX_SMAPLE_CNT)
+					lastLocations.Dequeue();
+				int dataCnt = lastLocations.Count;
+
+
+				if (dataCnt >= SPEED_SMAPLE_CNT)
 				{
-					int speed = location.Speed.HasValue ? (int)(location.Speed.Value * 3.6) : 0; // 속도를 km/h로 변환
-					Device.BeginInvokeOnMainThread(() =>
+					double tot_speed = 0.0;
+					double tot_cnt = 0.0;
+					for (int idx = Math.Max(dataCnt - SPEED_SMAPLE_CNT, 0); idx < dataCnt; idx++)
 					{
-						SpeedLabel.Text = $"{speed} km/h";
-					});
+						var loc = lastLocations.ElementAt(idx);
+						if (loc.Speed == null) continue;
+
+						tot_speed += (double)(loc.Speed.Value * 3.6);
+						tot_cnt += 1.0;
+					}
+					if (tot_cnt > 0)
+						outputSpeed = (int)Math.Round(tot_speed / tot_cnt);
 				}
+
+
+				if (dataCnt >= INCLINE_SMAPLE_CNT)
+				{
+					double tot_distance = 0.0;
+					double tot_elevation = 0.0;
+
+					for (int idx = Math.Max(dataCnt - INCLINE_SMAPLE_CNT, 0); idx + 1 < dataCnt; idx++)
+					{
+						var loc_from = lastLocations.ElementAt(idx);
+						var loc_to = lastLocations.ElementAt(idx + 1);
+						if (loc_from.Altitude == null || loc_to.Altitude == null) continue;
+
+						tot_distance += Location.CalculateDistance(loc_from, loc_to, DistanceUnits.Kilometers) * 1000.0;
+						tot_elevation += (double)loc_to.Altitude - (double)loc_from.Altitude;
+					}
+					if (tot_distance > 100)
+						outputIncline = tot_elevation / tot_distance * 100.0;
+				}
+
+
+				Device.BeginInvokeOnMainThread(() =>
+				{
+					SpeedLabel.Text = $"{outputSpeed} km/h";
+					InclineLabel.Text = $"{outputIncline:F1} %";
+				});
 			}
 			catch (Exception ex)
 			{
 				// 예외 처리
 				Console.WriteLine($"Unable to get location: {ex.Message}");
 			}
-		}
-
-		void OnAccelerometerReadingChanged(object sender, AccelerometerChangedEventArgs e)
-		{
-			var data = e.Reading;
-
-			if (isNeedUpdateBase)
-			{
-				isNeedUpdateBase = false;
-				baseAccVal = data.Acceleration;
-			}
-
-			Vector3 t_acc = data.Acceleration - baseAccVal;
-			double acc_x = t_acc.X;
-			double acc_y = t_acc.Z;
-
-			AccXQueue.Add(acc_x);
-			AccYQueue.Add(acc_y);
-
-			while (AccXQueue.Count > 3) AccXQueue.RemoveAt(0);
-			while (AccYQueue.Count > 3) AccYQueue.RemoveAt(0);
-
-			double acc_x_avg = 0.0;
-			double acc_y_avg = 0.0;
-			foreach (double val in AccXQueue) acc_x_avg += val;
-			foreach (double val in AccYQueue) acc_y_avg += val;
-			acc_x_avg /= AccXQueue.Count;
-			acc_y_avg /= AccYQueue.Count;
-
-			double acc_tot = Math.Sqrt(acc_x_avg * acc_x_avg + acc_y_avg * acc_y_avg);
-			double center_multiplier =
-				acc_tot > MaxAcc ?
-				1.0 / acc_tot :
-				1.0 / MaxAcc;
-
-			Device.BeginInvokeOnMainThread(() =>
-			{
-				CentralBubble.TranslationX = MaxOffset * center_multiplier * acc_x_avg;
-				CentralBubble.TranslationY = MaxOffset * center_multiplier * acc_y_avg;
-
-				// 각도 값 업데이트
-				AccT.Text = $"T: {acc_tot:F2}";
-				AccX.Text = $"X: {Math.Abs(acc_x_avg):F2}";
-				AccY.Text = $"X: {Math.Abs(acc_y_avg):F2}";
-			});
 		}
 	}
 }

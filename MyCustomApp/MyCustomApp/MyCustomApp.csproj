@@ -13,21 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\AboutPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <Compile Update="Views\ItemDetailPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <Compile Update="Views\ItemsPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <Compile Update="Views\LoginPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <Compile Update="Views\NewItemPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
     <Compile Update="Pages\SpeedmeterPage.xaml.cs">
       <DependentUpon>SpeedmeterPage.xaml</DependentUpon>
     </Compile>
@@ -47,5 +32,6 @@
 
   <ItemGroup>
     <Folder Include="Interface\" />
+    <Folder Include="Views\" />
   </ItemGroup>
 </Project>

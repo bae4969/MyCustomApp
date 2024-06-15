@@ -18,20 +18,9 @@
             <Label x:Name="SpeedLabel" Text="0 km/h" TextColor="#D0D0D0" FontSize="55" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,50,0,0" Grid.Row="0" />
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="0" HorizontalOptions="Center">
-            <AbsoluteLayout WidthRequest="300" HeightRequest="300" >
-                <BoxView Color="#101010" CornerRadius="150" WidthRequest="300" HeightRequest="300" AbsoluteLayout.LayoutBounds="0.5, 0.5, AutoSize, AutoSize" AbsoluteLayout.LayoutFlags="PositionProportional"/>
-                <BoxView x:Name="CentralBubble" Color="#C83232" CornerRadius="15" WidthRequest="30" HeightRequest="30" AbsoluteLayout.LayoutBounds="0.5, 0.5, AutoSize, AutoSize" AbsoluteLayout.LayoutFlags="PositionProportional" />
-            </AbsoluteLayout>
-        </Grid>
-        <!-- X, Y 축 값 및 동작 상태 -->
-        <StackLayout Grid.Row="2" Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,0,10">
-            <Label x:Name="AccT" Text="Y: 0" TextColor="#D0D0D0" FontSize="Large" HorizontalOptions="Center" />
-            <Label x:Name="AccX" Text="X: 0" TextColor="#D0D0D0" FontSize="Large" HorizontalOptions="Center" />
-            <Label x:Name="AccY" Text="Y: 0" TextColor="#D0D0D0" FontSize="Large" HorizontalOptions="Center" />
-        </StackLayout>
-        <StackLayout Grid.Row="3" Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,0,30">
-            <Button Text="Set ZERO Acceleroation" Clicked="OnSetZeroAccClicked" />
+        <!-- 기울기 표시 라벨 -->
+        <StackLayout Grid.Row="1" Grid.Column="0" HorizontalOptions="Center">
+            <Label x:Name="InclineLabel" Text="0.0 %" TextColor="#D0D0D0" FontSize="55" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,30,0,0" Grid.Row="0" />
         </StackLayout>
     </Grid>
 </ContentPage>
